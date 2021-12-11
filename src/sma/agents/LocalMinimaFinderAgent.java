@@ -27,19 +27,8 @@ public class LocalMinimaFinderAgent extends Agent{
 	   addBehaviour(new OneShotBehaviour() {
 		 @Override
 		 public void action() {
-            try {
-    			double [] localMinimaCoords = gradientDescentAlgorithm(x, y, gradStep, xMax, yMax);
-
-				Thread.currentThread().sleep(3000);
-				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-				message.setOntology("LOCAL_MINIMA_COORDS");
-				message.addReceiver(new AID("global-minima-finder",AID.ISLOCALNAME));
-				message.setContent(localMinimaCoords[0]+","+localMinimaCoords[1]);
-				
-				send(message);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+    		double [] localMinimaCoords = gradientDescentAlgorithm(x, y, gradStep, xMax, yMax);
+			doAction(localMinimaCoords);
 		 }
 	   });
     }
@@ -123,5 +112,14 @@ public class LocalMinimaFinderAgent extends Agent{
 	
 	private  static double norm(double x,double y) {
 		return Math.sqrt(x*x + y*y);
+	}
+	
+	private void doAction(double [] localMinimaCoords) {
+		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+		message.setOntology("LOCAL_MINIMA_COORDS");
+		message.addReceiver(new AID("global-minima-finder",AID.ISLOCALNAME));
+		message.setContent(localMinimaCoords[0]+","+localMinimaCoords[1]);
+		
+		send(message);
 	}
 }

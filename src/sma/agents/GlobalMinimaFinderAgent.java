@@ -51,10 +51,7 @@ public class GlobalMinimaFinderAgent extends Agent{
 					localMinimasCoords[nbrOfReceivedMsgs-1][0] =  Double.parseDouble(coords[0]);
 					localMinimasCoords[nbrOfReceivedMsgs-1][1] =  Double.parseDouble(coords[1]);
 					if(nbrOfReceivedMsgs == nbrOfLocalMinimas) {
-					    System.out.println("************ DONE: tous les agents ont déja réussi a envoyer les minimums locals trouvés ***************");
-						 //here find global minima like this
-						 double [] globalMinimaCoords = getGlobalMinimaCoords();
-						 System.out.println("*********** GLOBAL MINIMA IS  f(x,y)= "+evalMathFn(globalMinimaCoords[0],globalMinimaCoords[1])+" / (x,y) = ("+globalMinimaCoords[0]+","+globalMinimaCoords[1]+") ***********" );
+					    doAction();
 					}
 			      }else if(response.getOntology().equals("MATH_FUNCTION_EVAL")) {
 			    	  System.out.println("math function parameters = "+response.getContent());
@@ -106,5 +103,12 @@ public class GlobalMinimaFinderAgent extends Agent{
     @Override
     protected void takeDown() {
  	   System.out.println("L'agent "+this.getAID().getName()+" va mourir");
+    }
+    
+    private void doAction() {
+    	System.out.println("************ DONE: tous les agents ont déja réussi a envoyer les minimums locals trouvés ***************");
+		 //here find global minima like this
+		 double [] globalMinimaCoords = getGlobalMinimaCoords();
+		 System.out.println("*********** GLOBAL MINIMA IS  f(x,y)= "+evalMathFn(globalMinimaCoords[0],globalMinimaCoords[1])+" / (x,y) = ("+globalMinimaCoords[0]+","+globalMinimaCoords[1]+") ***********" );
     }
 }
