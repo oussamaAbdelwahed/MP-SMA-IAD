@@ -3,6 +3,7 @@ package sma.agents;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.ControllerException;
@@ -12,25 +13,43 @@ public class LocalMinimaFinderAgent extends Agent{
     protected void setup() {
  	   System.out.println("Création et initialisation de l'agent : "+this.getAID().getName());
  	   Object[] args = getArguments();
-	   
-	   double x = (Double)args[0];
-	   double y = (Double)args[1];
-	   double gradStep = (Double)args[2];
-	   double xMax = (Double)args[3];
-	   double yMax = (Double)args[4];
-	   System.out.println("initial x = "+x);
-	   System.out.println("initial y = "+y);
-	   System.out.println("gradient step  = "+gradStep);
-	   System.out.println("MAX X = "+xMax);
-	   System.out.println("MAX Y = "+yMax); 	
-	   
-	   addBehaviour(new OneShotBehaviour() {
-		 @Override
-		 public void action() {
-    		double [] localMinimaCoords = gradientDescentAlgorithm(x, y, gradStep, xMax, yMax);
-			doAction(localMinimaCoords);
-		 }
+		ACLMessage m = new ACLMessage(ACLMessage.INFORM);
+		m.addReceiver(new AID("global-minima-finder",AID.ISLOCALNAME));
+		m.setOntology("UP_AND_READY");
+		m.setContent("ANY");
+		send(m);
+
+	   addBehaviour(new CyclicBehaviour() {
+		   @Override
+		   public void action() {
+			  ACLMessage response = receive();
+			  if(response!=null) {	
+				  System.out.println("RECEIVED SOMETHING");
+				  if(response.getOntology().equals("SUB_FUNCTION_DOMAIN_SET")) {
+					  String [] tokens = response.getContent().split(";");
+					  double x = Double.parseDouble(tokens[0]);
+					  double y = Double.parseDouble(tokens[1]);
+					  double gradStep = Double.parseDouble(tokens[2]);
+					  double xMax = Double.parseDouble(tokens[3]);
+					  double yMax = Double.parseDouble(tokens[4]);
+					  
+					  System.out.println("initial x = "+x);
+					  System.out.println("initial y = "+y);
+					  System.out.println("gradient step  = "+gradStep);
+					  System.out.println("MAX X = "+xMax);
+					  System.out.println("MAX Y = "+yMax); 
+					   
+				 	  double [] localMinimaCoords = gradientDescentAlgorithm(x, y, gradStep, xMax, yMax);
+					  doAction(localMinimaCoords);
+				  }else {
+					  System.out.println("ANOTHER MESSAGE ONTOLOGY TYPE RECEIVED FROM GLOBAL MIN FINDER");
+				  } 	
+			  }else {
+				block();
+			  }
+		   }
 	   });
+
     }
     
     @Override

@@ -9,6 +9,7 @@ public class GlobalMinimaFinderAgent extends Agent{
 	private double localMinimasCoords[][];
 	private int nbrOfLocalMinimas;
 	int nbrOfReceivedMsgs = 0;
+	int coordsParamsCounter=0;
 	
 	private  double evalMathFn(double x,double y) {
 	    double res = 0.2*(2*(1-x)*(1-x)*Math.exp(-(x*x)-(y+1)*(y+1))-8*(x/5-x*x*x-y*y*y*y*y)*Math.exp(-x*x-y*y)-(1/3)*Math.exp(-(x+1)*(x+1)-y*y));
@@ -33,20 +34,40 @@ public class GlobalMinimaFinderAgent extends Agent{
 	
 	@Override
     protected void setup() {
- 	   System.out.println("Création et initialisation de l'agent : "+this.getAID().getName());
+		System.out.println("Création et initialisation de l'agent : "+this.getAID().getName());
+		double gradStep=0.004;
+		
+
+		String [] subDomainsCoords = new String[] {
+				"-2;-2;"+gradStep+";0;0",
+				"-2;0;"+gradStep+";0;2",
+				"0;-2;"+gradStep+";2;0",
+				"0;0;"+gradStep+";2;2"
+		};
+ 	  
  	   Object[] args = getArguments();
+ 	   
  	   nbrOfLocalMinimas = (int)args[0];
  	   localMinimasCoords = new double[nbrOfLocalMinimas][2];
  	   
  	   addBehaviour(new CyclicBehaviour() {
 			@Override
 			public void action() {
-				
+			
 				ACLMessage response = receive();
 				if(response!=null) {
-				 if(response.getOntology().equals("LOCAL_MINIMA_COORDS")) {
+				  if(response.getOntology().equals("UP_AND_READY")) {
+					  System.out.println("UP_AND_READY ONTOLOGY RECEIVED FROM AGENT "+response.getSender().getName());
+					  ACLMessage m = new ACLMessage(ACLMessage.INFORM);
+					  m.setOntology("SUB_FUNCTION_DOMAIN_SET");
+					  
+					  //m.addReceiver(new AID(response.getSender().getName(),AID.ISLOCALNAME));
+					  m.addReceiver(response.getSender());
+					  m.setContent(subDomainsCoords[coordsParamsCounter++]);
+					  send(m);
+				  }else if(response.getOntology().equals("LOCAL_MINIMA_COORDS")) {
 					nbrOfReceivedMsgs+=1;
-					System.out.println("=====> Message received from agent"+response.getSender().getName()+" and contains localMinimaCoordinates = ("+response.getContent()+")");  
+					System.out.println("=====> Message received from agent "+response.getSender().getName()+" and contains localMinimaCoordinates = ("+response.getContent()+")");  
 					String [] coords = response.getContent().split(",");
 					localMinimasCoords[nbrOfReceivedMsgs-1][0] =  Double.parseDouble(coords[0]);
 					localMinimasCoords[nbrOfReceivedMsgs-1][1] =  Double.parseDouble(coords[1]);
@@ -54,7 +75,7 @@ public class GlobalMinimaFinderAgent extends Agent{
 					    doAction();
 					}
 			      }else if(response.getOntology().equals("MATH_FUNCTION_EVAL")) {
-			    	  System.out.println("math function parameters = "+response.getContent());
+			    	  //System.out.println("math function parameters = "+response.getContent());
 			    	  String [] coords = response.getContent().split(";");
 			    	  String res="";
 			    	  for(int i=0;i<3;i++) {
@@ -70,7 +91,7 @@ public class GlobalMinimaFinderAgent extends Agent{
 			    	  reply.setOntology("MATH_FUNCTION_EVAL");
 			    	  reply.setContent(res);
 			    	  send(reply);
-				  }
+				  }else {}
 				}else {
 					block();
 				}
