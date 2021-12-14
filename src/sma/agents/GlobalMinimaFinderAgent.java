@@ -58,11 +58,8 @@ public class GlobalMinimaFinderAgent extends Agent{
 				if(response!=null) {
 				  if(response.getOntology().equals("UP_AND_READY")) {
 					  System.out.println("UP_AND_READY ONTOLOGY RECEIVED FROM AGENT "+response.getSender().getName());
-					  ACLMessage m = new ACLMessage(ACLMessage.INFORM);
+					  ACLMessage m = response.createReply();
 					  m.setOntology("SUB_FUNCTION_DOMAIN_SET");
-					  
-					  //m.addReceiver(new AID(response.getSender().getName(),AID.ISLOCALNAME));
-					  m.addReceiver(response.getSender());
 					  m.setContent(subDomainsCoords[coordsParamsCounter++]);
 					  send(m);
 				  }else if(response.getOntology().equals("LOCAL_MINIMA_COORDS")) {
